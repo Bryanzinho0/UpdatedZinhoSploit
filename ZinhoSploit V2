@@ -7,11 +7,12 @@ local player = Players.LocalPlayer
 local espEnabled = false
 local tracersEnabled = false
 local aimbotEnabled = false
-local autoReloadEnabled = false
 local maxAmmoEnabled = false
 local noclipEnabled = false
 local godModeEnabled = false
+local hitboxSize = 2
 local aimbotToggleKey = Enum.KeyCode.E
+local noclipToggleKey = Enum.KeyCode.N
 local espBoxes = {}
 local espConnections = {}
 local walkSpeed = 16
@@ -26,8 +27,8 @@ screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Create Main Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 400)
-frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+frame.Size = UDim2.new(0, 300, 0, 450)
+frame.Position = UDim2.new(0.5, -150, 0.5, -225)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.BorderSizePixel = 2
 frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -108,10 +109,56 @@ local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.15, 0))
 local button2 = createButton("Toggle ESP", UDim2.new(0.55, 0, 0.15, 0))
 local button3 = createButton("Toggle Tracers", UDim2.new(0.05, 0, 0.25, 0))
 local button4 = createButton("Toggle Aimbot", UDim2.new(0.55, 0, 0.25, 0))
-local button5 = createButton("Auto Reload", UDim2.new(0.05, 0, 0.35, 0))
-local button6 = createButton("Max Ammo", UDim2.new(0.55, 0, 0.35, 0))
-local button7 = createButton("No Clip", UDim2.new(0.05, 0, 0.45, 0))
-local button8 = createButton("God Mode", UDim2.new(0.55, 0, 0.45, 0))
+local button5 = createButton("Max Ammo", UDim2.new(0.05, 0, 0.35, 0))
+local button6 = createButton("No Clip", UDim2.new(0.55, 0, 0.35, 0))
+local button7 = createButton("God Mode", UDim2.new(0.05, 0, 0.45, 0))
+local button8 = createButton("Suicide", UDim2.new(0.55, 0, 0.45, 0))
+
+-- Create Hitbox Size Slider
+local hitboxLabel = Instance.new("TextLabel")
+hitboxLabel.Size = UDim2.new(0.9, 0, 0, 20)
+hitboxLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
+hitboxLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+hitboxLabel.Text = "Hitbox Size: " .. tostring(hitboxSize)
+hitboxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitboxLabel.Font = Enum.Font.Gotham
+hitboxLabel.TextSize = 18
+hitboxLabel.Parent = frame
+
+local hitboxSlider = Instance.new("TextBox")
+hitboxSlider.Size = UDim2.new(0.9, 0, 0, 30)
+hitboxSlider.Position = UDim2.new(0.05, 0, 0.6, 0)
+hitboxSlider.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+hitboxSlider.Text = tostring(hitboxSize)
+hitboxSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+hitboxSlider.Font = Enum.Font.Gotham
+hitboxSlider.TextSize = 18
+hitboxSlider.Parent = frame
+
+-- Add round edges to Hitbox Label and Slider
+local hitboxLabelCorner = Instance.new("UICorner")
+hitboxLabelCorner.CornerRadius = UDim.new(0.1, 0)
+hitboxLabelCorner.Parent = hitboxLabel
+
+local hitboxSliderCorner = Instance.new("UICorner")
+hitboxSliderCorner.CornerRadius = UDim.new(0.1, 0)
+hitboxSliderCorner.Parent = hitboxSlider
+
+hitboxSlider.FocusLost:Connect(function()
+    local newSize = tonumber(hitboxSlider.Text)
+    if newSize then
+        hitboxSize = newSize
+        hitboxLabel.Text = "Hitbox Size: " .. tostring(hitboxSize)
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                player.Character.Head.Size = Vector3.new(hitboxSize, hitboxSize, hitboxSize)
+                player.Character.Head.Transparency = 0.5
+            end
+        end
+    else
+        hitboxSlider.Text = tostring(hitboxSize)
+    end
+end)
 
 -- Add Button Functionality
 button1.MouseButton1Click:Connect(function()
@@ -312,35 +359,6 @@ button4.MouseButton1Click:Connect(function()
     end
 end)
 
--- Auto Reload Code for South Bronx
-local function autoReload()
-    autoReloadEnabled = not autoReloadEnabled
-    if autoReloadEnabled then
-        print("Auto Reload enabled")
-    else
-        print("Auto Reload disabled")
-    end
-end
-
-local function reloadWeapon(tool)
-    if tool and tool:FindFirstChild("Reload") and tool.Reload:IsA("RemoteEvent") then
-        tool.Reload:FireServer()
-        print(tool.Name .. " auto reloaded")
-    end
-end
-
-local function checkAndAutoReload(tool)
-    if tool:FindFirstChild("Ammo") then
-        tool.Ammo:GetPropertyChangedSignal("Value"):Connect(function()
-            if tool.Ammo.Value <= 1 then
-                reloadWeapon(tool)
-            end
-        end)
-    end
-end
-
-button5.MouseButton1Click:Connect(autoReload)
-
 -- Max Ammo Code for South Bronx
 local function maxAmmo()
     maxAmmoEnabled = not maxAmmoEnabled
@@ -359,7 +377,7 @@ local function setMaxAmmo(tool)
     end
 end
 
-button6.MouseButton1Click:Connect(maxAmmo)
+button5.MouseButton1Click:Connect(maxAmmo)
 
 -- Monitor when the player equips a tool
 player.Backpack.ChildAdded:Connect(function(child)
@@ -367,9 +385,6 @@ player.Backpack.ChildAdded:Connect(function(child)
         child.Equipped:Connect(function()
             if maxAmmoEnabled then
                 setMaxAmmo(child)
-            end
-            if autoReloadEnabled then
-                checkAndAutoReload(child)
             end
         end)
     end
@@ -382,9 +397,6 @@ if player.Character then
             tool.Equipped:Connect(function()
                 if maxAmmoEnabled then
                     setMaxAmmo(tool)
-                end
-                if autoReloadEnabled then
-                    checkAndAutoReload(tool)
                 end
             end)
         end
@@ -408,10 +420,22 @@ RunService.Stepped:Connect(function()
                 part.CanCollide = false
             end
         end
+    else
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
     end
 end)
 
-button7.MouseButton1Click:Connect(toggleNoclip)
+UserInputService.InputBegan:Connect(function(input, isProcessed)
+    if not isProcessed and input.KeyCode == noclipToggleKey then
+        toggleNoclip()
+    end
+end)
+
+button6.MouseButton1Click:Connect(toggleNoclip)
 
 -- God Mode Code
 local function toggleGodMode()
@@ -432,7 +456,12 @@ local function toggleGodMode()
     end
 end
 
-button8.MouseButton1Click:Connect(toggleGodMode)
+button7.MouseButton1Click:Connect(toggleGodMode)
+
+-- Suicide Button
+button8.MouseButton1Click:Connect(function()
+    player.Character.Humanoid.Health = 0
+end)
 
 -- Toggle Aimbot with Key
 UserInputService.InputBegan:Connect(function(input, isProcessed)
