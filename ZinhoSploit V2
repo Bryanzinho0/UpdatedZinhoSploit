@@ -22,11 +22,11 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ZinhoSploitGui"
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Create Frame
+-- Create Main Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 350, 0, 450)
-frame.Position = UDim2.new(0.5, -175, 0.5, -225)
-frame.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+frame.Size = UDim2.new(0, 400, 0, 600)
+frame.Position = UDim2.new(0.5, -200, 0.5, -300)
+frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.Draggable = true
@@ -34,31 +34,66 @@ frame.Parent = screenGui
 
 -- Add round edges to Frame
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0.1, 0)
+frameCorner.CornerRadius = UDim.new(0.05, 0)
 frameCorner.Parent = frame
+
+-- Create Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 50)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+titleBar.Parent = frame
 
 -- Create Title Label
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.Size = UDim2.new(1, 0, 1, 0)
 titleLabel.Position = UDim2.new(0, 0, 0, 0)
-titleLabel.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+titleLabel.BackgroundTransparency = 1
 titleLabel.Text = "Zinho Sploit"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 28
-titleLabel.Parent = frame
+titleLabel.Parent = titleBar
 
--- Add round edges to Title Label
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0.1, 0)
-titleCorner.Parent = titleLabel
+-- Add Tab Buttons
+local tabButtons = Instance.new("Frame")
+tabButtons.Size = UDim2.new(1, 0, 0, 50)
+tabButtons.Position = UDim2.new(0, 0, 0, 50)
+tabButtons.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+tabButtons.Parent = frame
+
+local function createTabButton(text, position)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 120, 1, 0)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 18
+    button.Parent = tabButtons
+
+    return button
+end
+
+local buttonsTab = createTabButton("Buttons", UDim2.new(0, 0, 0, 0))
+local commandsTab = createTabButton("Commands", UDim2.new(0, 120, 0, 0))
+local luaTab = createTabButton("Lua", UDim2.new(0, 240, 0, 0))
+
+-- Create Button Container
+local buttonContainer = Instance.new("Frame")
+buttonContainer.Size = UDim2.new(1, 0, 1, -100)
+buttonContainer.Position = UDim2.new(0, 0, 0, 100)
+buttonContainer.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+buttonContainer.Parent = frame
 
 -- Function to create buttons
 local function createButton(text, position, parent)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0.9, 0, 0, 40)
+    button.Size = UDim2.new(0, 150, 0, 50)
     button.Position = position
-    button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     button.BorderSizePixel = 0
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -75,33 +110,33 @@ local function createButton(text, position, parent)
 end
 
 -- Create buttons
-local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.1, 0), frame)
-local button2 = createButton("Toggle ESP", UDim2.new(0.05, 0, 0.2, 0), frame)
-local button3 = createButton("Toggle Tracers", UDim2.new(0.05, 0, 0.3, 0), frame)
-local button4 = createButton("Toggle Aimbot", UDim2.new(0.05, 0, 0.4, 0), frame)
-local button5 = createButton("Toggle Auto Reload", UDim2.new(0.05, 0, 0.5, 0), frame)
-local button6 = createButton("Toggle Max Ammo", UDim2.new(0.05, 0, 0.6, 0), frame)
+local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.1, 0), buttonContainer)
+local button2 = createButton("Toggle ESP", UDim2.new(0.55, 0, 0.1, 0), buttonContainer)
+local button3 = createButton("Toggle Tracers", UDim2.new(0.05, 0, 0.25, 0), buttonContainer)
+local button4 = createButton("Toggle Aimbot", UDim2.new(0.55, 0, 0.25, 0), buttonContainer)
+local button5 = createButton("Auto Reload", UDim2.new(0.05, 0, 0.4, 0), buttonContainer)
+local button6 = createButton("Max Ammo", UDim2.new(0.55, 0, 0.4, 0), buttonContainer)
 
 -- Create Speed Hack Slider
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(0.9, 0, 0, 20)
-speedLabel.Position = UDim2.new(0.05, 0, 0.7, 0)
-speedLabel.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+speedLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
+speedLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 speedLabel.Text = "Speed Hack: " .. tostring(walkSpeed)
 speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedLabel.Font = Enum.Font.Gotham
 speedLabel.TextSize = 18
-speedLabel.Parent = frame
+speedLabel.Parent = buttonContainer
 
 local speedSlider = Instance.new("TextBox")
 speedSlider.Size = UDim2.new(0.9, 0, 0, 30)
-speedSlider.Position = UDim2.new(0.05, 0, 0.75, 0)
-speedSlider.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+speedSlider.Position = UDim2.new(0.05, 0, 0.6, 0)
+speedSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 speedSlider.Text = tostring(walkSpeed)
 speedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedSlider.Font = Enum.Font.Gotham
 speedSlider.TextSize = 18
-speedSlider.Parent = frame
+speedSlider.Parent = buttonContainer
 
 -- Add round edges to Speed Label and Slider
 local speedLabelCorner = Instance.new("UICorner")
