@@ -1,0 +1,427 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Camera = Workspace.CurrentCamera
+local player = Players.LocalPlayer
+local espEnabled = false
+local aimbotEnabled = false
+local flightEnabled = false
+local autoReloadEnabled = false
+local aimbotToggleKey = Enum.KeyCode.E  -- Change this to the key you want to use for toggling the aimbot
+local flightToggleKey = Enum.KeyCode.F  -- Key to toggle flight mode
+local flightSpeed = 2  -- Further reduced flight speed for less detectability
+local espBoxes = {}
+local espConnections = {}
+local walkSpeed = 16  -- Default walk speed
+local maxWalkSpeed = 20  -- Maximum allowed walk speed to prevent crashes
+local projectileSpeed = 300 -- Assumed speed of bullets or projectiles
+local predictionStrength = 1 -- Strength of prediction
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ZinhoSploitGui"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create Frame
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 350, 0, 550)
+frame.Position = UDim2.new(0.5, -175, 0.5, -275)
+frame.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- Add round edges to Frame
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0.05, 0)
+frameCorner.Parent = frame
+
+-- Create Title Label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+titleLabel.Text = "Zinho Sploit"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 28
+titleLabel.Parent = frame
+
+-- Add round edges to Title Label
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0.05, 0)
+titleCorner.Parent = titleLabel
+
+-- Function to create buttons
+local function createButton(text, position, parent)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0.9, 0, 0, 40)
+    button.Position = position
+    button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    button.BorderSizePixel = 0
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 18
+    button.Parent = parent
+
+    -- Add round edges to button
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0.05, 0)
+    buttonCorner.Parent = button
+
+    return button
+end
+
+-- Create buttons
+local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.15, 0), frame)
+local button2 = createButton("Toggle ESP", UDim2.new(0.05, 0, 0.25, 0), frame)
+local button3 = createButton("Toggle Aimbot", UDim2.new(0.05, 0, 0.35, 0), frame)
+local button4 = createButton("Toggle Flight", UDim2.new(0.05, 0, 0.45, 0), frame)
+local button5 = createButton("Toggle Auto Reload", UDim2.new(0.05, 0, 0.55, 0), frame)
+
+-- Create Speed Hack Slider
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(0.9, 0, 0, 20)
+speedLabel.Position = UDim2.new(0.05, 0, 0.65, 0)
+speedLabel.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+speedLabel.Text = "Speed Hack: " .. tostring(walkSpeed)
+speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedLabel.Font = Enum.Font.Gotham
+speedLabel.TextSize = 18
+speedLabel.Parent = frame
+
+local speedSlider = Instance.new("TextBox")
+speedSlider.Size = UDim2.new(0.9, 0, 0, 30)
+speedSlider.Position = UDim2.new(0.05, 0, 0.7, 0)
+speedSlider.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+speedSlider.Text = tostring(walkSpeed)
+speedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedSlider.Font = Enum.Font.Gotham
+speedSlider.TextSize = 18
+speedSlider.Parent = frame
+
+-- Add round edges to Speed Label and Slider
+local speedLabelCorner = Instance.new("UICorner")
+speedLabelCorner.CornerRadius = UDim.new(0.05, 0)
+speedLabelCorner.Parent = speedLabel
+
+local speedSliderCorner = Instance.new("UICorner")
+speedSliderCorner.CornerRadius = UDim.new(0.05, 0)
+speedSliderCorner.Parent = speedSlider
+
+speedSlider.FocusLost:Connect(function()
+    local newSpeed = tonumber(speedSlider.Text)
+    if newSpeed then
+        if newSpeed > maxWalkSpeed then
+            newSpeed = maxWalkSpeed
+            speedSlider.Text = tostring(maxWalkSpeed)
+        end
+        walkSpeed = newSpeed
+        speedLabel.Text = "Speed Hack: " .. tostring(walkSpeed)
+        player.Character.Humanoid.WalkSpeed = walkSpeed
+    else
+        speedSlider.Text = tostring(walkSpeed)
+    end
+end)
+
+-- Add functionality to the buttons
+button1.MouseButton1Click:Connect(function()
+    -- Give BTools
+    local function giveBTools()
+        local tool1 = Instance.new("HopperBin", player.Backpack)
+        tool1.BinType = Enum.BinType.Hammer  -- Delete tool
+        tool1.Name = "Delete Tool"
+
+        local tool2 = Instance.new("HopperBin", player.Backpack)
+        tool2.BinType = Enum.BinType.Clone  -- Clone tool
+        tool2.Name = "Clone Tool"
+
+        local tool3 = Instance.new("HopperBin", player.Backpack)
+        tool3.BinType = Enum.BinType.Grab  -- Move tool
+        tool3.Name = "Move Tool"
+    end
+
+    giveBTools()
+    print("BTools given to player")
+end)
+
+-- ESP Code
+local function createESP(player)
+    local box = Drawing.new("Square")
+    box.Thickness = 1
+    box.Color = Color3.new(1, 1, 1)
+    box.Filled = false
+    box.Visible = false
+
+    local tracer = Drawing.new("Line")
+    tracer.Thickness = 1
+    tracer.Color = Color3.new(1, 1, 1)
+    tracer.Visible = false
+
+    local name = Drawing.new("Text")
+    name.Color = Color3.new(1, 1, 1)
+    name.Size = 14
+    name.Center = true
+    name.Outline = true
+    name.Visible = false
+
+    espBoxes[player] = {Box = box, Tracer = tracer, Name = name}
+end
+
+local function updateESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer and espBoxes[player] then
+            local character = player.Character
+            if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0 then
+                local rootPart = character.HumanoidRootPart
+                local rootPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+                if onScreen then
+                    local head = character:FindFirstChild("Head")
+                    local leg = character:FindFirstChild("HumanoidRootPart")
+                    if head and leg then
+                        local headPos = Camera:WorldToViewportPoint(head.Position)
+                        local legPos = Camera:WorldToViewportPoint(leg.Position)
+                        local size = Vector2.new(1000 / rootPos.Z, math.abs(headPos.Y - legPos.Y))
+
+                        local box = espBoxes[player].Box
+                        box.Size = size
+                        box.Position = Vector2.new(rootPos.X - size.X / 2, rootPos.Y - size.Y / 2)
+                        box.Visible = true
+
+                        local tracer = espBoxes[player].Tracer
+                        tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                        tracer.To = Vector2.new(rootPos.X, rootPos.Y)
+                        tracer.Visible = true
+
+                        local name = espBoxes[player].Name
+                        name.Text = player.Name
+                        name.Position = Vector2.new(rootPos.X, rootPos.Y + size.Y / 2)
+                        name.Visible = true
+                    end
+                else
+                    espBoxes[player].Box.Visible = false
+                    espBoxes[player].Tracer.Visible = false
+                    espBoxes[player].Name.Visible = false
+                end
+            else
+                espBoxes[player].Box.Visible = false
+                espBoxes[player].Tracer.Visible = false
+                espBoxes[player].Name.Visible = false
+            end
+        end
+    end
+end
+
+local function enableESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then
+            createESP(player)
+        end
+    end
+    table.insert(espConnections, Players.PlayerAdded:Connect(function(player)
+        createESP(player)
+    end))
+    table.insert(espConnections, Players.PlayerRemoving:Connect(function(player)
+        if espBoxes[player] then
+            espBoxes[player].Box:Remove()
+            espBoxes[player].Tracer:Remove()
+            espBoxes[player].Name:Remove()
+            espBoxes[player] = nil
+        end
+    end))
+    table.insert(espConnections, RunService.RenderStepped:Connect(updateESP))
+end
+
+local function disableESP()
+    for _, conn in pairs(espConnections) do
+        conn:Disconnect()
+    end
+    espConnections = {}
+    for _, esp in pairs(espBoxes) do
+        esp.Box:Remove()
+        esp.Tracer:Remove()
+        esp.Name:Remove()
+    end
+    espBoxes = {}
+end
+
+button2.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    if espEnabled then
+        enableESP()
+        print("ESP enabled")
+    else
+        disableESP()
+        print("ESP disabled")
+    end
+end)
+
+-- Aimbot Code with Prediction
+local targetPlayer = nil
+
+local function predictPosition(target)
+    local targetRoot = target.Character.HumanoidRootPart
+    local targetVelocity = targetRoot.Velocity
+    local distance = (targetRoot.Position - player.Character.HumanoidRootPart.Position).Magnitude
+    local timeToHit = distance / projectileSpeed
+    return targetRoot.Position + targetVelocity * timeToHit * predictionStrength
+end
+
+local function getClosestPlayerToCursor()
+    local closestPlayer
+    local shortestDistance = math.huge
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer and player.Character and player.Character:FindFirstChild("Head") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+            local head = player.Character.Head
+            local pos = Camera:WorldToViewportPoint(head.Position)
+            local distance = (Vector2.new(pos.X, pos.Y) - UserInputService:GetMouseLocation()).Magnitude
+            if distance < shortestDistance then
+                closestPlayer = player
+                shortestDistance = distance
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+local function aimAt(target)
+    local predictedPos = predictPosition(target)
+    local pos = Camera:WorldToViewportPoint(predictedPos)
+    mousemoverel((pos.X - UserInputService:GetMouseLocation().X) / 2, (pos.Y - UserInputService:GetMouseLocation().Y) / 2)
+end
+
+RunService.RenderStepped:Connect(function()
+    if aimbotEnabled then
+        if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("Head") or targetPlayer.Character.Humanoid.Health <= 0 then
+            targetPlayer = getClosestPlayerToCursor()
+        end
+        if targetPlayer then
+            aimAt(targetPlayer)
+        end
+    end
+end)
+
+button3.MouseButton1Click:Connect(function()
+    aimbotEnabled = not aimbotEnabled
+    targetPlayer = nil
+    if aimbotEnabled then
+        print("Aimbot enabled")
+    else
+        print("Aimbot disabled")
+    end
+end)
+
+-- Flight Code
+local function toggleFlight()
+    flightEnabled = not flightEnabled
+    if flightEnabled then
+        local bodyGyro = Instance.new("BodyGyro")
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyGyro.P = 9e4
+        bodyGyro.Parent = player.Character.HumanoidRootPart
+        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+        bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        bodyVelocity.Parent = player.Character.HumanoidRootPart
+
+        RunService.RenderStepped:Connect(function()
+            if flightEnabled then
+                player.Character.Humanoid.PlatformStand = true
+                local direction = Vector3.new(0, 0, 0)
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                    direction = direction + (Camera.CFrame.LookVector * flightSpeed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                    direction = direction - (Camera.CFrame.LookVector * flightSpeed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                    direction = direction - (Camera.CFrame.RightVector * flightSpeed)
+                end
+                if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                    direction = direction + (Camera.CFrame.RightVector * flightSpeed)
+                end
+                -- Smooth movement with lower speed to avoid detection
+                direction = direction * 0.9 + bodyVelocity.Velocity * 0.1
+                bodyVelocity.Velocity = direction
+                bodyGyro.CFrame = Camera.CFrame
+            else
+                player.Character.Humanoid.PlatformStand = false
+                bodyVelocity:Destroy()
+                bodyGyro:Destroy()
+            end
+        end)
+    else
+        player.Character.Humanoid.PlatformStand = false
+    end
+end
+
+button4.MouseButton1Click:Connect(toggleFlight)
+
+-- Toggle Flight with Key
+UserInputService.InputBegan:Connect(function(input, isProcessed)
+    if not isProcessed and input.KeyCode == flightToggleKey then
+        toggleFlight()
+    end
+end)
+
+-- Auto Reload Code
+local function autoReload()
+    autoReloadEnabled = not autoReloadEnabled
+    if autoReloadEnabled then
+        print("Auto Reload enabled")
+    else
+        print("Auto Reload disabled")
+    end
+end
+
+local function reloadWeapon()
+    local tool = player.Character:FindFirstChildWhichIsA("Tool")
+    if tool and tool:FindFirstChild("Reload") then
+        tool:FindFirstChild("Reload"):InvokeServer()
+    end
+end
+
+RunService.RenderStepped:Connect(function()
+    if autoReloadEnabled then
+        local tool = player.Character:FindFirstChildWhichIsA("Tool")
+        if tool and tool:FindFirstChild("Ammo") then
+            local ammo = tool:FindFirstChild("Ammo").Value
+            if ammo == 0 then
+                reloadWeapon()
+            end
+        end
+    end
+end)
+
+button5.MouseButton1Click:Connect(autoReload)
+
+-- Toggle Aimbot with Key
+UserInputService.InputBegan:Connect(function(input, isProcessed)
+    if not isProcessed and input.KeyCode == aimbotToggleKey then
+        aimbotEnabled = not aimbotEnabled
+        targetPlayer = nil
+        if aimbotEnabled then
+            print("Aimbot enabled")
+        else
+            print("Aimbot disabled")
+        end
+    end
+end)
+
+-- Function to toggle GUI visibility
+local guiVisible = true
+local function toggleGuiVisibility()
+    guiVisible = not guiVisible
+    screenGui.Enabled = guiVisible
+end
+
+-- Bind the toggle function to the "Insert" key
+UserInputService.InputBegan:Connect(function(input, isProcessed)
+    if not isProcessed and input.KeyCode == Enum.KeyCode.Insert then
+        toggleGuiVisibility()
+    end
+end)
