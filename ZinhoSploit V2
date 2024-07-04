@@ -9,6 +9,8 @@ local tracersEnabled = false
 local aimbotEnabled = false
 local autoReloadEnabled = false
 local maxAmmoEnabled = false
+local noclipEnabled = false
+local godModeEnabled = false
 local aimbotToggleKey = Enum.KeyCode.E
 local espBoxes = {}
 local espConnections = {}
@@ -24,145 +26,94 @@ screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Create Main Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 400, 0, 600)
-frame.Position = UDim2.new(0.5, -200, 0.5, -300)
+frame.Size = UDim2.new(0, 300, 0, 400)
+frame.Position = UDim2.new(0.5, -150, 0.5, -200)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true
+frame.BorderSizePixel = 2
+frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 frame.Parent = screenGui
 
 -- Add round edges to Frame
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0.05, 0)
+frameCorner.CornerRadius = UDim.new(0.1, 0)
 frameCorner.Parent = frame
 
--- Create Title Bar
-local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 50)
-titleBar.Position = UDim2.new(0, 0, 0, 0)
-titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-titleBar.Parent = frame
+-- Make frame draggable
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
 
 -- Create Title Label
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 1, 0)
+titleLabel.Size = UDim2.new(1, 0, 0, 50)
 titleLabel.Position = UDim2.new(0, 0, 0, 0)
-titleLabel.BackgroundTransparency = 1
+titleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+titleLabel.BorderSizePixel = 0
 titleLabel.Text = "Zinho Sploit"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 28
-titleLabel.Parent = titleBar
+titleLabel.Parent = frame
 
--- Add Tab Buttons
-local tabButtons = Instance.new("Frame")
-tabButtons.Size = UDim2.new(1, 0, 0, 50)
-tabButtons.Position = UDim2.new(0, 0, 0, 50)
-tabButtons.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-tabButtons.Parent = frame
-
-local function createTabButton(text, position)
+-- Create Button Function
+local function createButton(text, position)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 120, 1, 0)
+    button.Size = UDim2.new(0, 120, 0, 30)
     button.Position = position
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    button.BorderSizePixel = 0
+    button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    button.BorderSizePixel = 1
+    button.BorderColor3 = Color3.fromRGB(0, 0, 0)
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 18
-    button.Parent = tabButtons
-
+    button.TextSize = 14
+    button.Parent = frame
     return button
 end
 
-local buttonsTab = createTabButton("Buttons", UDim2.new(0, 0, 0, 0))
-local commandsTab = createTabButton("Commands", UDim2.new(0, 120, 0, 0))
-local luaTab = createTabButton("Lua", UDim2.new(0, 240, 0, 0))
+-- Create Buttons
+local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.15, 0))
+local button2 = createButton("Toggle ESP", UDim2.new(0.55, 0, 0.15, 0))
+local button3 = createButton("Toggle Tracers", UDim2.new(0.05, 0, 0.25, 0))
+local button4 = createButton("Toggle Aimbot", UDim2.new(0.55, 0, 0.25, 0))
+local button5 = createButton("Auto Reload", UDim2.new(0.05, 0, 0.35, 0))
+local button6 = createButton("Max Ammo", UDim2.new(0.55, 0, 0.35, 0))
+local button7 = createButton("No Clip", UDim2.new(0.05, 0, 0.45, 0))
+local button8 = createButton("God Mode", UDim2.new(0.55, 0, 0.45, 0))
 
--- Create Button Container
-local buttonContainer = Instance.new("Frame")
-buttonContainer.Size = UDim2.new(1, 0, 1, -100)
-buttonContainer.Position = UDim2.new(0, 0, 0, 100)
-buttonContainer.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-buttonContainer.Parent = frame
-
--- Function to create buttons
-local function createButton(text, position, parent)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0, 150, 0, 50)
-    button.Position = position
-    button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    button.BorderSizePixel = 0
-    button.Text = text
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.Font = Enum.Font.GothamBold
-    button.TextSize = 18
-    button.Parent = parent
-
-    -- Add round edges to button
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0.1, 0)
-    buttonCorner.Parent = button
-
-    return button
-end
-
--- Create buttons
-local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.1, 0), buttonContainer)
-local button2 = createButton("Toggle ESP", UDim2.new(0.55, 0, 0.1, 0), buttonContainer)
-local button3 = createButton("Toggle Tracers", UDim2.new(0.05, 0, 0.25, 0), buttonContainer)
-local button4 = createButton("Toggle Aimbot", UDim2.new(0.55, 0, 0.25, 0), buttonContainer)
-local button5 = createButton("Auto Reload", UDim2.new(0.05, 0, 0.4, 0), buttonContainer)
-local button6 = createButton("Max Ammo", UDim2.new(0.55, 0, 0.4, 0), buttonContainer)
-
--- Create Speed Hack Slider
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(0.9, 0, 0, 20)
-speedLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
-speedLabel.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-speedLabel.Text = "Speed Hack: " .. tostring(walkSpeed)
-speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedLabel.Font = Enum.Font.Gotham
-speedLabel.TextSize = 18
-speedLabel.Parent = buttonContainer
-
-local speedSlider = Instance.new("TextBox")
-speedSlider.Size = UDim2.new(0.9, 0, 0, 30)
-speedSlider.Position = UDim2.new(0.05, 0, 0.6, 0)
-speedSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-speedSlider.Text = tostring(walkSpeed)
-speedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedSlider.Font = Enum.Font.Gotham
-speedSlider.TextSize = 18
-speedSlider.Parent = buttonContainer
-
--- Add round edges to Speed Label and Slider
-local speedLabelCorner = Instance.new("UICorner")
-speedLabelCorner.CornerRadius = UDim.new(0.1, 0)
-speedLabelCorner.Parent = speedLabel
-
-local speedSliderCorner = Instance.new("UICorner")
-speedSliderCorner.CornerRadius = UDim.new(0.1, 0)
-speedSliderCorner.Parent = speedSlider
-
-speedSlider.FocusLost:Connect(function()
-    local newSpeed = tonumber(speedSlider.Text)
-    if newSpeed then
-        if newSpeed > maxWalkSpeed then
-            newSpeed = maxWalkSpeed
-            speedSlider.Text = tostring(maxWalkSpeed)
-        end
-        walkSpeed = newSpeed
-        speedLabel.Text = "Speed Hack: " .. tostring(walkSpeed)
-        player.Character.Humanoid.WalkSpeed = walkSpeed
-    else
-        speedSlider.Text = tostring(walkSpeed)
-    end
-end)
-
--- Add functionality to the buttons
+-- Add Button Functionality
 button1.MouseButton1Click:Connect(function()
     local function giveBTools()
         local tool1 = Instance.new("HopperBin", player.Backpack)
@@ -412,7 +363,7 @@ button6.MouseButton1Click:Connect(maxAmmo)
 
 -- Monitor when the player equips a tool
 player.Backpack.ChildAdded:Connect(function(child)
-    if child:IsA("Tool") and child:FindFirstChild("Ammo") then
+    if child:IsA("Tool") and (child.Name == "Draco" or child.Name == "GlockS" or child.Name == "GlockBeam" or child.Name == "Glock") and child:FindFirstChild("Ammo") then
         child.Equipped:Connect(function()
             if maxAmmoEnabled then
                 setMaxAmmo(child)
@@ -427,7 +378,7 @@ end)
 -- Also check currently equipped tool in case the script runs while the tool is already equipped
 if player.Character then
     for _, tool in pairs(player.Character:GetChildren()) do
-        if tool:IsA("Tool") and tool:FindFirstChild("Ammo") then
+        if tool:IsA("Tool") and (tool.Name == "Draco" or tool.Name == "GlockS" or tool.Name == "GlockBeam" or tool.Name == "Glock") and tool:FindFirstChild("Ammo") then
             tool.Equipped:Connect(function()
                 if maxAmmoEnabled then
                     setMaxAmmo(tool)
@@ -439,6 +390,49 @@ if player.Character then
         end
     end
 end
+
+-- No Clip Code
+local function toggleNoclip()
+    noclipEnabled = not noclipEnabled
+    if noclipEnabled then
+        print("No Clip enabled")
+    else
+        print("No Clip disabled")
+    end
+end
+
+RunService.Stepped:Connect(function()
+    if noclipEnabled then
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end)
+
+button7.MouseButton1Click:Connect(toggleNoclip)
+
+-- God Mode Code
+local function toggleGodMode()
+    godModeEnabled = not godModeEnabled
+    if godModeEnabled then
+        player.Character.Humanoid.Name = "1"
+        local clone = player.Character["1"]:Clone()
+        clone.Parent = player.Character
+        clone.Name = "Humanoid"
+        player.Character["1"]:Destroy()
+        player.Character:FindFirstChildOfClass("Humanoid").Health = math.huge
+        RunService.Stepped:Connect(function()
+            player.Character:FindFirstChildOfClass("Humanoid").Health = math.huge
+        end)
+        print("God Mode enabled")
+    else
+        print("God Mode disabled")
+    end
+end
+
+button8.MouseButton1Click:Connect(toggleGodMode)
 
 -- Toggle Aimbot with Key
 UserInputService.InputBegan:Connect(function(input, isProcessed)
