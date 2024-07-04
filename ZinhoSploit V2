@@ -10,7 +10,7 @@ local flightEnabled = false
 local autoReloadEnabled = false
 local aimbotToggleKey = Enum.KeyCode.E  -- Change this to the key you want to use for toggling the aimbot
 local flightToggleKey = Enum.KeyCode.F  -- Key to toggle flight mode
-local flightSpeed = 2  -- Further reduced flight speed for less detectability
+local flightSpeed = 1  -- Further reduced flight speed for less detectability
 local espBoxes = {}
 local espConnections = {}
 local walkSpeed = 16  -- Default walk speed
@@ -316,42 +316,29 @@ button3.MouseButton1Click:Connect(function()
     end
 end)
 
--- Flight Code
+-- Flight Code using MoveDirection
 local function toggleFlight()
     flightEnabled = not flightEnabled
     if flightEnabled then
-        local bodyGyro = Instance.new("BodyGyro")
-        local bodyVelocity = Instance.new("BodyVelocity")
-        bodyGyro.P = 9e4
-        bodyGyro.Parent = player.Character.HumanoidRootPart
-        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-        bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-        bodyVelocity.Parent = player.Character.HumanoidRootPart
-
+        player.Character.Humanoid.PlatformStand = true
         RunService.RenderStepped:Connect(function()
             if flightEnabled then
-                player.Character.Humanoid.PlatformStand = true
-                local direction = Vector3.new(0, 0, 0)
+                local moveDirection = Vector3.new()
                 if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                    direction = direction + (Camera.CFrame.LookVector * flightSpeed)
+                    moveDirection = moveDirection + (Camera.CFrame.LookVector * flightSpeed)
                 end
                 if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                    direction = direction - (Camera.CFrame.LookVector * flightSpeed)
+                    moveDirection = moveDirection - (Camera.CFrame.LookVector * flightSpeed)
                 end
                 if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                    direction = direction - (Camera.CFrame.RightVector * flightSpeed)
+                    moveDirection = moveDirection - (Camera.CFrame.RightVector * flightSpeed)
                 end
                 if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                    direction = direction + (Camera.CFrame.RightVector * flightSpeed)
+                    moveDirection = moveDirection + (Camera.CFrame.RightVector * flightSpeed)
                 end
-                -- Smooth movement with lower speed to avoid detection
-                direction = direction * 0.9 + bodyVelocity.Velocity * 0.1
-                bodyVelocity.Velocity = direction
-                bodyGyro.CFrame = Camera.CFrame
+                player.Character.Humanoid.MoveDirection = moveDirection
             else
                 player.Character.Humanoid.PlatformStand = false
-                bodyVelocity:Destroy()
-                bodyGyro:Destroy()
             end
         end)
     else
