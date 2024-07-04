@@ -6,11 +6,8 @@ local Camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
 local espEnabled = false
 local aimbotEnabled = false
-local flightEnabled = false
 local autoReloadEnabled = false
 local aimbotToggleKey = Enum.KeyCode.E  -- Change this to the key you want to use for toggling the aimbot
-local flightToggleKey = Enum.KeyCode.F  -- Key to toggle flight mode
-local flightSpeed = 1  -- Further reduced flight speed for less detectability
 local espBoxes = {}
 local espConnections = {}
 local walkSpeed = 16  -- Default walk speed
@@ -79,13 +76,12 @@ end
 local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.15, 0), frame)
 local button2 = createButton("Toggle ESP", UDim2.new(0.05, 0, 0.25, 0), frame)
 local button3 = createButton("Toggle Aimbot", UDim2.new(0.05, 0, 0.35, 0), frame)
-local button4 = createButton("Toggle Flight", UDim2.new(0.05, 0, 0.45, 0), frame)
-local button5 = createButton("Toggle Auto Reload", UDim2.new(0.05, 0, 0.55, 0), frame)
+local button4 = createButton("Toggle Auto Reload", UDim2.new(0.05, 0, 0.45, 0), frame)
 
 -- Create Speed Hack Slider
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(0.9, 0, 0, 20)
-speedLabel.Position = UDim2.new(0.05, 0, 0.65, 0)
+speedLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
 speedLabel.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
 speedLabel.Text = "Speed Hack: " .. tostring(walkSpeed)
 speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -95,7 +91,7 @@ speedLabel.Parent = frame
 
 local speedSlider = Instance.new("TextBox")
 speedSlider.Size = UDim2.new(0.9, 0, 0, 30)
-speedSlider.Position = UDim2.new(0.05, 0, 0.7, 0)
+speedSlider.Position = UDim2.new(0.05, 0, 0.6, 0)
 speedSlider.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 speedSlider.Text = tostring(walkSpeed)
 speedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -316,45 +312,6 @@ button3.MouseButton1Click:Connect(function()
     end
 end)
 
--- Flight Code using MoveDirection
-local function toggleFlight()
-    flightEnabled = not flightEnabled
-    if flightEnabled then
-        player.Character.Humanoid.PlatformStand = true
-        RunService.RenderStepped:Connect(function()
-            if flightEnabled then
-                local moveDirection = Vector3.new()
-                if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                    moveDirection = moveDirection + (Camera.CFrame.LookVector * flightSpeed)
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                    moveDirection = moveDirection - (Camera.CFrame.LookVector * flightSpeed)
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                    moveDirection = moveDirection - (Camera.CFrame.RightVector * flightSpeed)
-                end
-                if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                    moveDirection = moveDirection + (Camera.CFrame.RightVector * flightSpeed)
-                end
-                player.Character.Humanoid.MoveDirection = moveDirection
-            else
-                player.Character.Humanoid.PlatformStand = false
-            end
-        end)
-    else
-        player.Character.Humanoid.PlatformStand = false
-    end
-end
-
-button4.MouseButton1Click:Connect(toggleFlight)
-
--- Toggle Flight with Key
-UserInputService.InputBegan:Connect(function(input, isProcessed)
-    if not isProcessed and input.KeyCode == flightToggleKey then
-        toggleFlight()
-    end
-end)
-
 -- Auto Reload Code
 local function autoReload()
     autoReloadEnabled = not autoReloadEnabled
@@ -384,7 +341,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-button5.MouseButton1Click:Connect(autoReload)
+button4.MouseButton1Click:Connect(autoReload)
 
 -- Toggle Aimbot with Key
 UserInputService.InputBegan:Connect(function(input, isProcessed)
