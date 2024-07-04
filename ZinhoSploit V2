@@ -5,6 +5,7 @@ local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local player = Players.LocalPlayer
 local espEnabled = false
+local tracersEnabled = false
 local aimbotEnabled = false
 local autoReloadEnabled = false
 local autoUnjamEnabled = false
@@ -23,8 +24,8 @@ screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Create Frame
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 350, 0, 550)
-frame.Position = UDim2.new(0.5, -175, 0.5, -275)
+frame.Size = UDim2.new(0, 700, 0, 250)
+frame.Position = UDim2.new(0.5, -350, 0.5, -125)
 frame.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -33,12 +34,12 @@ frame.Parent = screenGui
 
 -- Add round edges to Frame
 local frameCorner = Instance.new("UICorner")
-frameCorner.CornerRadius = UDim.new(0.05, 0)
+frameCorner.CornerRadius = UDim.new(0.1, 0)
 frameCorner.Parent = frame
 
 -- Create Title Label
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(1, 0, 0, 50)
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
 titleLabel.Position = UDim2.new(0, 0, 0, 0)
 titleLabel.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 titleLabel.Text = "Zinho Sploit"
@@ -49,36 +50,37 @@ titleLabel.Parent = frame
 
 -- Add round edges to Title Label
 local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0.05, 0)
+titleCorner.CornerRadius = UDim.new(0.1, 0)
 titleCorner.Parent = titleLabel
 
 -- Function to create buttons
 local function createButton(text, position, parent)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0.9, 0, 0, 40)
+    button.Size = UDim2.new(0, 100, 0, 30)
     button.Position = position
     button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
     button.BorderSizePixel = 0
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 18
+    button.TextSize = 14
     button.Parent = parent
 
     -- Add round edges to button
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0.05, 0)
+    buttonCorner.CornerRadius = UDim.new(0.1, 0)
     buttonCorner.Parent = button
 
     return button
 end
 
 -- Create buttons
-local button1 = createButton("Give BTools", UDim2.new(0.05, 0, 0.15, 0), frame)
-local button2 = createButton("Toggle ESP", UDim2.new(0.05, 0, 0.25, 0), frame)
-local button3 = createButton("Toggle Aimbot", UDim2.new(0.05, 0, 0.35, 0), frame)
-local button4 = createButton("Toggle Auto Reload", UDim2.new(0.05, 0, 0.45, 0), frame)
-local button5 = createButton("Toggle Auto Unjam", UDim2.new(0.05, 0, 0.55, 0), frame)
+local button1 = createButton("Give BTools", UDim2.new(0.02, 0, 0.25, 0), frame)
+local button2 = createButton("Toggle ESP", UDim2.new(0.18, 0, 0.25, 0), frame)
+local button3 = createButton("Toggle Tracers", UDim2.new(0.34, 0, 0.25, 0), frame)
+local button4 = createButton("Toggle Aimbot", UDim2.new(0.50, 0, 0.25, 0), frame)
+local button5 = createButton("Toggle Auto Reload", UDim2.new(0.66, 0, 0.25, 0), frame)
+local button6 = createButton("Toggle Auto Unjam", UDim2.new(0.82, 0, 0.25, 0), frame)
 
 -- Create Speed Hack Slider
 local speedLabel = Instance.new("TextLabel")
@@ -93,7 +95,7 @@ speedLabel.Parent = frame
 
 local speedSlider = Instance.new("TextBox")
 speedSlider.Size = UDim2.new(0.9, 0, 0, 30)
-speedSlider.Position = UDim2.new(0.05, 0, 0.7, 0)
+speedSlider.Position = UDim2.new(0.05, 0, 0.75, 0)
 speedSlider.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
 speedSlider.Text = tostring(walkSpeed)
 speedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -103,11 +105,11 @@ speedSlider.Parent = frame
 
 -- Add round edges to Speed Label and Slider
 local speedLabelCorner = Instance.new("UICorner")
-speedLabelCorner.CornerRadius = UDim.new(0.05, 0)
+speedLabelCorner.CornerRadius = UDim.new(0.1, 0)
 speedLabelCorner.Parent = speedLabel
 
 local speedSliderCorner = Instance.new("UICorner")
-speedSliderCorner.CornerRadius = UDim.new(0.05, 0)
+speedSliderCorner.CornerRadius = UDim.new(0.1, 0)
 speedSliderCorner.Parent = speedSlider
 
 speedSlider.FocusLost:Connect(function()
@@ -187,17 +189,17 @@ local function updateESP()
                         local box = espBoxes[player].Box
                         box.Size = size
                         box.Position = Vector2.new(rootPos.X - size.X / 2, rootPos.Y - size.Y / 2)
-                        box.Visible = true
+                        box.Visible = espEnabled
 
                         local tracer = espBoxes[player].Tracer
                         tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
                         tracer.To = Vector2.new(rootPos.X, rootPos.Y)
-                        tracer.Visible = true
+                        tracer.Visible = tracersEnabled
 
                         local name = espBoxes[player].Name
                         name.Text = player.Name
                         name.Position = Vector2.new(rootPos.X, rootPos.Y + size.Y / 2)
-                        name.Visible = true
+                        name.Visible = espEnabled
                     end
                 else
                     espBoxes[player].Box.Visible = false
@@ -257,6 +259,17 @@ button2.MouseButton1Click:Connect(function()
     end
 end)
 
+button3.MouseButton1Click:Connect(function()
+    tracersEnabled = not tracersEnabled
+    if tracersEnabled then
+        enableESP()
+        print("Tracers enabled")
+    else
+        disableESP()
+        print("Tracers disabled")
+    end
+end)
+
 -- Aimbot Code with Prediction
 local targetPlayer = nil
 
@@ -304,7 +317,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-button3.MouseButton1Click:Connect(function()
+button4.MouseButton1Click:Connect(function()
     aimbotEnabled = not aimbotEnabled
     targetPlayer = nil
     if aimbotEnabled then
@@ -314,7 +327,7 @@ button3.MouseButton1Click:Connect(function()
     end
 end)
 
--- Auto Reload Code
+-- Auto Reload Code for South Bronx
 local function autoReload()
     autoReloadEnabled = not autoReloadEnabled
     if autoReloadEnabled then
@@ -326,8 +339,12 @@ end
 
 local function reloadWeapon()
     local tool = player.Character:FindFirstChildWhichIsA("Tool")
-    if tool and tool:FindFirstChild("Reload") then
-        tool:FindFirstChild("Reload"):InvokeServer()
+    if tool and tool:FindFirstChild("ServerControl") then
+        local serverControl = tool:FindFirstChild("ServerControl")
+        local reloadEvent = serverControl:FindFirstChild("Reload")
+        if reloadEvent then
+            reloadEvent:InvokeServer()
+        end
     end
 end
 
@@ -343,9 +360,9 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-button4.MouseButton1Click:Connect(autoReload)
+button5.MouseButton1Click:Connect(autoReload)
 
--- Auto Unjam Code
+-- Auto Unjam Code for South Bronx
 local function autoUnjam()
     autoUnjamEnabled = not autoUnjamEnabled
     if autoUnjamEnabled then
@@ -357,8 +374,12 @@ end
 
 local function unjamWeapon()
     local tool = player.Character:FindFirstChildWhichIsA("Tool")
-    if tool and tool:FindFirstChild("Unjam") then
-        tool:FindFirstChild("Unjam"):InvokeServer()
+    if tool and tool:FindFirstChild("ServerControl") then
+        local serverControl = tool:FindFirstChild("ServerControl")
+        local unjamEvent = serverControl:FindFirstChild("Unjam")
+        if unjamEvent then
+            unjamEvent:InvokeServer()
+        end
     end
 end
 
@@ -371,7 +392,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-button5.MouseButton1Click:Connect(autoUnjam)
+button6.MouseButton1Click:Connect(autoUnjam)
 
 -- Toggle Aimbot with Key
 UserInputService.InputBegan:Connect(function(input, isProcessed)
